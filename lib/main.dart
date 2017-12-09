@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:todos/todo.dart';
 import 'package:todos/todo_list.dart';
@@ -29,13 +31,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Todo> _elements = <Todo>[
+  final _elements = <Todo>[
     new Todo(text: "don't worry"),
     new Todo(text: "be happy")
   ];
 
-  void _createNewTodo() {
-    setState(() => _elements.add(new Todo(text: "foo todo")));
+  Future<Null> _createNewTodo(BuildContext context) async {
+    String modalDialogResult = await showDialog(context: context, child: new SimpleDialog(
+      children: <Widget>[
+        new TextField(
+          decoration: new InputDecoration(hintText: "text goes here, dummy"),
+        ),
+        new MaterialButton(
+          onPressed: () => Navigator.pop(context, "Sent back foo"),
+          child: new Text("Create"),
+        )
+      ],
+    ));
+
+    if (modalDialogResult != null) {
+      setState(() => _elements.add(new Todo(text: modalDialogResult)));
+    }
   }
 
   @override
@@ -48,7 +64,9 @@ class _MyHomePageState extends State<MyHomePage> {
         todoElements: _elements,
       ),
       floatingActionButton: new FloatingActionButton(
-        onPressed: _createNewTodo,
+        onPressed: () {
+          _createNewTodo(context);
+        },
         tooltip: 'Add New Todo',
         child: new Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
