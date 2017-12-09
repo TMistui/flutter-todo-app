@@ -24,10 +24,6 @@ class TodoListItem extends StatelessWidget {
   final TodoChangedCallback onTodoClick;
 
   Color _getColor(BuildContext context) {
-    // The theme depends on the BuildContext because different parts of the tree
-    // can have different themes.  The BuildContext indicates where the build is
-    // taking place and therefore which theme to use.
-
     return isChecked ? Colors.black54 : Theme
         .of(context)
         .primaryColor;
@@ -44,9 +40,7 @@ class TodoListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new ListTile(
-        onTap: () {
-          onTodoClick(this.todo, isChecked);
-        },
+        onTap: () => onTodoClick(this.todo, isChecked),
         leading: new CircleAvatar(
           backgroundColor: _getColor(context),
           child: new Text(todo.text[0]),

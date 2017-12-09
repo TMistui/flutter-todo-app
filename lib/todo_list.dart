@@ -17,6 +17,7 @@ class _TodoListState extends State<TodoList> {
 
   void _toggleTodoState(Todo target, bool oldState) {
     debugPrint('_TodoListState._toggleTodoState: ${_todoStates[target]} => (${!oldState})');
+
     setState(() => _todoStates[target] = !oldState);
   }
 
@@ -24,9 +25,8 @@ class _TodoListState extends State<TodoList> {
   @override
   void initState() {
     super.initState();
-    widget.todoElements.forEach((todo) {
-      _todoStates[todo] = false;
-    });
+
+    widget.todoElements.forEach((todo) => _todoStates[todo] = false);
   }
 
   @override
