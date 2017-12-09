@@ -5,7 +5,7 @@ import 'package:todos/todo.dart';
 
 class TodoList extends StatefulWidget {
   TodoList({
-    @required Key key,
+    Key key,
     @required this.todoElements
   }) : super(key: key);
 

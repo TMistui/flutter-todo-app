@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         // The application theme.
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
+      home: new MyHomePage(title: 'Foxy To-do List'),
     );
   }
 }
@@ -31,27 +31,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _elements = <Todo>[
-    new Todo(text: "don't worry"),
-    new Todo(text: "be happy")
-  ];
+  final _elements = <Todo>[];
 
   Future<Null> _createNewTodo(BuildContext context) async {
-    String modalDialogResult = await showDialog(context: context, child: new SimpleDialog(
+    String modalDialogResult = await _getUserTextInput(context);
+
+    if (modalDialogResult != null && modalDialogResult.isNotEmpty) {
+      setState(() => _elements.add(new Todo(text: modalDialogResult)));
+    }
+  }
+
+  Future<String> _getUserTextInput(BuildContext context) {
+    var textController = new TextEditingController();
+    return showDialog(
+        context: context, child: new SimpleDialog(
+      contentPadding: new EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       children: <Widget>[
+        new Text("Got something new to do?",
+          style: new TextStyle(fontSize: Theme.of(context).primaryTextTheme.title.fontSize),
+        ),
         new TextField(
-          decoration: new InputDecoration(hintText: "text goes here, dummy"),
+          decoration: new InputDecoration(
+            hintText: "text goes here, dummy",
+          ),
+          controller: textController,
         ),
         new MaterialButton(
-          onPressed: () => Navigator.pop(context, "Sent back foo"),
-          child: new Text("Create"),
+          onPressed: () => Navigator.pop(context, textController.text ?? ""),
+          child: new Text("Create",
+            style: new TextStyle(color: Theme.of(context).primaryColor),
+          ),
         )
       ],
     ));
-
-    if (modalDialogResult != null) {
-      setState(() => _elements.add(new Todo(text: modalDialogResult)));
-    }
   }
 
   @override
