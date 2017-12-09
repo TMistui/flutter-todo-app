@@ -41,7 +41,7 @@ class _TodoListState extends State<TodoList> {
             final todo = widget.todoElements[position];
             return new TodoListItem(
               todo: todo,
-              isChecked: _todoStates[todo],
+              isChecked: _todoStates[todo] ?? false,
               onTodoClick: _toggleTodoState,
             );
           },

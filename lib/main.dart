@@ -35,7 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   void _createNewTodo() {
-    //setState(() => _elements.insert(0, new Todo(text: "foo todo")));
+    setState(() => _elements.add(new Todo(text: "foo todo")));
   }
 
   @override
