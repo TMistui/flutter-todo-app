@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:todos/todo.dart';
 import 'package:todos/todo_list.dart';
 
@@ -48,7 +49,11 @@ class _MyHomePageState extends State<MyHomePage> {
       contentPadding: new EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       children: <Widget>[
         new Text("Got something new to do?",
-          style: new TextStyle(fontSize: Theme.of(context).primaryTextTheme.title.fontSize),
+          style: new TextStyle(fontSize: Theme
+              .of(context)
+              .primaryTextTheme
+              .title
+              .fontSize),
         ),
         new TextField(
           decoration: new InputDecoration(
@@ -59,7 +64,9 @@ class _MyHomePageState extends State<MyHomePage> {
         new MaterialButton(
           onPressed: () => Navigator.pop(context, textController.text ?? ""),
           child: new Text("Create",
-            style: new TextStyle(color: Theme.of(context).primaryColor),
+            style: new TextStyle(color: Theme
+                .of(context)
+                .primaryColor),
           ),
         )
       ],
@@ -83,5 +90,23 @@ class _MyHomePageState extends State<MyHomePage> {
         child: new Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+class Dataloader {
+
+  static Database _database;
+
+  static Future<Database> through(String path) async {
+    if (_database == null) {
+      _database = await openDatabase(path, version: 1,
+        onCreate: (Database db, int version) async {
+          // When creating the db, create the table
+          await db.execute(
+              "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, state INTEGER)");
+        },
+      );
+    }
+    return new Future.value(_database);
   }
 }
