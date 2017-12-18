@@ -4,12 +4,15 @@ import 'package:todos/todo.dart';
 
 
 class TodoList extends StatefulWidget {
+
   TodoList({
     Key key,
-    @required this.todoElements
+    @required this.todoElements,
+    this.onTodoStateChanged
   }) : super(key: key);
 
   final List<Todo> todoElements;
+  final TodoChangedCallback onTodoStateChanged;
 
   @override
   State createState() => new _TodoListState();
@@ -20,10 +23,13 @@ class _TodoListState extends State<TodoList> {
   Map<Todo, bool> _todoStates = {};
 
   void _toggleTodoState(Todo target, bool oldState) {
-    debugPrint(
-        '_TodoListState._toggleTodoState: ${_todoStates[target]} => (${!oldState})');
+    bool newState = !oldState;
+    debugPrint('._toggleTodoState: ${_todoStates[target]} => ($newState)');
 
-    setState(() => _todoStates[target] = !oldState);
+    setState(() {
+      _todoStates[target] = newState;
+      widget?.onTodoStateChanged(target, newState);
+    });
   }
 
 
@@ -48,7 +54,6 @@ class _TodoListState extends State<TodoList> {
               return new TodoListItem(
                 todo: todo,
                 isChecked: _todoStates[todo] ?? false,
-                // this is getOrDefault (java)
                 onTodoClick: _toggleTodoState,
               );
             },
