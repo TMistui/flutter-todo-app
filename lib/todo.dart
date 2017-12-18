@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart'
-    show BuildContext, CircleAvatar, Color, Colors,
-    ListTile, ObjectKey, StatelessWidget, Text,
-    TextDecoration, TextStyle, Theme, Widget;
+import 'package:flutter/material.dart';
+
+
+typedef void TodoChangedCallback(Todo todo, bool checkState);
 
 class Todo {
   const Todo({this.text});
@@ -10,8 +10,6 @@ class Todo {
 
   @override String toString() => "Todo[$text]";
 }
-
-typedef void TodoChangedCallback(Todo todo, bool checkState);
 
 class TodoListItem extends StatelessWidget {
 
