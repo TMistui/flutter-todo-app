@@ -20,25 +20,15 @@ class TodoList extends StatefulWidget {
 
 class _TodoListState extends State<TodoList> {
 
-  Map<Todo, bool> _todoStates = {};
-
   void _toggleTodoState(Todo target, bool oldState) {
     bool newState = !oldState;
-    debugPrint('._toggleTodoState: ${_todoStates[target]} => ($newState)');
+    debugPrint('_TLS._toggleTodoState: ${target.isDone} => ($newState)');
 
     setState(() {
-      _todoStates[target] = newState;
       widget?.onTodoStateChanged(target, newState);
     });
   }
 
-
-  @override
-  void initState() {
-    super.initState();
-
-    widget.todoElements.forEach((todo) => _todoStates[todo] = false);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +43,7 @@ class _TodoListState extends State<TodoList> {
               final todo = widget.todoElements[position];
               return new TodoListItem(
                 todo: todo,
-                isChecked: _todoStates[todo] ?? false,
+                isChecked: todo.isDone,
                 onTodoClick: _toggleTodoState,
               );
             },

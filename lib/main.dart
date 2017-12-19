@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:todos/helpers.dart';
 import 'package:todos/todo.dart';
 import 'package:todos/todo_list.dart';
 
@@ -32,45 +33,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _elements = <Todo>[];
+
+  final todoMap = <String, Todo>{};
 
   Future<Null> _createNewTodo(BuildContext context) async {
-    String modalDialogResult = await _getUserTextInput(context);
+    String modalDialogResult = await promptForUserTextInput(context);
 
     if (modalDialogResult != null && modalDialogResult.isNotEmpty) {
-      setState(() => _elements.add(new Todo(text: modalDialogResult)));
+      var todo = new Todo(text: modalDialogResult, isDone: false);
+      setState(() {
+        todoMap[todo.text] = todo;
+        debugPrint('Todomap: ${JSON.encode(todoMap)}', wrapWidth: 80);
+      });
     }
   }
 
-  Future<String> _getUserTextInput(BuildContext context) {
-    var textController = new TextEditingController();
-    return showDialog(
-        context: context, child: new SimpleDialog(
-      contentPadding: new EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      children: <Widget>[
-        new Text("Got something new to do?",
-          style: new TextStyle(fontSize: Theme
-              .of(context)
-              .primaryTextTheme
-              .title
-              .fontSize),
-        ),
-        new TextField(
-          decoration: new InputDecoration(
-            hintText: "text goes here, dummy",
-          ),
-          controller: textController,
-        ),
-        new MaterialButton(
-          onPressed: () => Navigator.pop(context, textController.text ?? ""),
-          child: new Text("Create",
-            style: new TextStyle(color: Theme
-                .of(context)
-                .primaryColor),
-          ),
-        )
-      ],
-    ));
+  void _persistChangeToDb(Todo todo, bool isChecked) {
+    setState(() {
+      // only state mutation allowed in the app
+      todoMap[todo.text].isDone = isChecked;
+    });
   }
 
   @override
@@ -80,7 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
         title: new Text(widget.title),
       ),
       body: new TodoList(
-        todoElements: _elements,
+          todoElements: todoMap.values.toList(),
+          onTodoStateChanged: _persistChangeToDb
       ),
       floatingActionButton: new FloatingActionButton(
         onPressed: () {
@@ -90,23 +73,5 @@ class _MyHomePageState extends State<MyHomePage> {
         child: new Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
-  }
-}
-
-class Dataloader {
-
-  static Database _database;
-
-  static Future<Database> through(String path) async {
-    if (_database == null) {
-      _database = await openDatabase(path, version: 1,
-        onCreate: (Database db, int version) async {
-          // When creating the db, create the table
-          await db.execute(
-              "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, state INTEGER)");
-        },
-      );
-    }
-    return new Future.value(_database);
   }
 }

@@ -1,14 +1,25 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 
 typedef void TodoChangedCallback(Todo todo, bool checkState);
 
 class Todo {
-  const Todo({this.text});
+  Todo({this.text, this.isDone: false});
 
   final String text;
+  bool isDone;
 
-  @override String toString() => "Todo[$text]";
+  @override String toString() => "Todo[$text: ${isDone ? 'done' : 'not done'}]";
+
+  toJson() => toMap();
+
+  toMap() =>
+      {
+        "text": text,
+        "done": isDone
+      };
 }
 
 class TodoListItem extends StatelessWidget {

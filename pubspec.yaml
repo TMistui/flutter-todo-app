@@ -3,7 +3,6 @@ description: Just items that can be checked off
 
 dependencies:
   path_provider: "^0.2.2"
-  sembast: "^1.5.0"
 
   flutter:
     sdk: flutter
