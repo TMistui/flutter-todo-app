@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:todos/helpers.dart';
 import 'package:todos/todo.dart';
+import 'package:todos/todo_data.dart';
 import 'package:todos/todo_list.dart';
 
 void main() => runApp(new MyApp());
@@ -34,16 +34,30 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  final persistenceRef = new TodoPersistence();
   final todoMap = <String, Todo>{};
 
-  Future<Null> _createNewTodo(BuildContext context) async {
-    String modalDialogResult = await promptForUserTextInput(context);
 
-    if (modalDialogResult != null && modalDialogResult.isNotEmpty) {
-      var todo = new Todo(text: modalDialogResult, isDone: false);
+  @override
+  void initState() {
+    super.initState();
+
+    persistenceRef.getAll().then((todosFromDisk) {
       setState(() {
-        todoMap[todo.text] = todo;
-        debugPrint('Todomap: ${JSON.encode(todoMap)}', wrapWidth: 80);
+        for (var todo in todosFromDisk) {
+          todoMap[todo.text] = todo;
+        }
+      });
+    });
+  }
+
+  Future<Null> _createNewTodo(BuildContext context) async {
+    final modalResult = await promptForUserTextInput(context);
+
+    if (modalResult?.isNotEmpty) { // ignore: null_aware_in_condition
+      setState(() {
+        todoMap[modalResult] = new Todo(text: modalResult);
+        persistenceRef.saveState(todoMap.values);
       });
     }
   }
@@ -52,6 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       // only state mutation allowed in the app
       todoMap[todo.text].isDone = isChecked;
+      persistenceRef.saveState(todoMap.values);
     });
   }
 

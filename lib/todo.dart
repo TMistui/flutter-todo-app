@@ -13,6 +13,10 @@ class Todo {
 
   @override String toString() => "Todo[$text: ${isDone ? 'done' : 'not done'}]";
 
+  static fromMap(Map<String, dynamic> map) {
+    return new Todo(text: map["text"], isDone: map["done"]);
+  }
+
   toJson() => toMap();
 
   toMap() =>
