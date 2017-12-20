@@ -8,11 +8,13 @@ class TodoList extends StatefulWidget {
   TodoList({
     Key key,
     @required this.todoElements,
-    this.onTodoStateChanged
+    this.onTodoStateChanged,
+    this.onTodoLongPress
   }) : super(key: key);
 
   final List<Todo> todoElements;
   final TodoChangedCallback onTodoStateChanged;
+  final TodoLongTouchedCallback onTodoLongPress;
 
   @override
   State createState() => new _TodoListState();
@@ -29,6 +31,13 @@ class _TodoListState extends State<TodoList> {
     });
   }
 
+  void _deleteTodo(Todo todo) {
+    debugPrint('_TodoListState._deleteTodo: $todo');
+
+    setState(() {
+      widget?.onTodoLongPress(todo);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +53,8 @@ class _TodoListState extends State<TodoList> {
               return new TodoListItem(
                 todo: todo,
                 isChecked: todo.isDone,
-                onTodoClick: _toggleTodoState,
+                onTodoTap: _toggleTodoState,
+                onTodoLongPress: _deleteTodo,
               );
             },
           ),

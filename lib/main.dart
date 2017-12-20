@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:todos/helpers.dart';
 import 'package:todos/todo.dart';
 import 'package:todos/todo_data.dart';
@@ -70,6 +71,16 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<Null> _deleteTodoFromPersistence(Todo todo) async {
+    await Clipboard.setData(new ClipboardData(text: todo.text));
+
+    setState(() {
+      // gotta delete stuff
+      todoMap.remove(todo.text);
+      persistenceRef.saveState(todoMap.values);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -77,8 +88,9 @@ class _MyHomePageState extends State<MyHomePage> {
         title: new Text(widget.title),
       ),
       body: new TodoList(
-          todoElements: todoMap.values.toList(),
-          onTodoStateChanged: _persistChangeToDb
+        todoElements: todoMap.values.toList(),
+        onTodoStateChanged: _persistChangeToDb,
+        onTodoLongPress: _deleteTodoFromPersistence,
       ),
       floatingActionButton: new FloatingActionButton(
         onPressed: () {
