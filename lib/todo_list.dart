@@ -4,12 +4,17 @@ import 'package:todos/todo.dart';
 
 
 class TodoList extends StatefulWidget {
+
   TodoList({
     Key key,
-    @required this.todoElements
+    @required this.todoElements,
+    this.onTodoStateChanged,
+    this.onTodoLongPress
   }) : super(key: key);
 
   final List<Todo> todoElements;
+  final TodoChangedCallback onTodoStateChanged;
+  final TodoLongTouchedCallback onTodoLongPress;
 
   @override
   State createState() => new _TodoListState();
@@ -17,21 +22,21 @@ class TodoList extends StatefulWidget {
 
 class _TodoListState extends State<TodoList> {
 
-  Map<Todo, bool> _todoStates = {};
-
   void _toggleTodoState(Todo target, bool oldState) {
-    debugPrint(
-        '_TodoListState._toggleTodoState: ${_todoStates[target]} => (${!oldState})');
+    bool newState = !oldState;
+    debugPrint('_TLS._toggleTodoState: ${target.isDone} => ($newState)');
 
-    setState(() => _todoStates[target] = !oldState);
+    setState(() {
+      widget?.onTodoStateChanged(target, newState);
+    });
   }
 
+  void _deleteTodo(Todo todo) {
+    debugPrint('_TodoListState._deleteTodo: $todo');
 
-  @override
-  void initState() {
-    super.initState();
-
-    widget.todoElements.forEach((todo) => _todoStates[todo] = false);
+    setState(() {
+      widget?.onTodoLongPress(todo);
+    });
   }
 
   @override
@@ -47,9 +52,9 @@ class _TodoListState extends State<TodoList> {
               final todo = widget.todoElements[position];
               return new TodoListItem(
                 todo: todo,
-                isChecked: _todoStates[todo] ?? false,
-                // this is getOrDefault (java)
-                onTodoClick: _toggleTodoState,
+                isChecked: todo.isDone,
+                onTodoTap: _toggleTodoState,
+                onTodoLongPress: _deleteTodo,
               );
             },
           ),

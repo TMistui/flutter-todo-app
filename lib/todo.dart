@@ -1,27 +1,45 @@
-import 'package:flutter/material.dart'
-    show BuildContext, CircleAvatar, Color, Colors,
-    ListTile, ObjectKey, StatelessWidget, Text,
-    TextDecoration, TextStyle, Theme, Widget;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
-class Todo {
-  const Todo({this.text});
-
-  final String text;
-
-  @override String toString() => "Todo[$text]";
-}
 
 typedef void TodoChangedCallback(Todo todo, bool checkState);
+typedef void TodoLongTouchedCallback(Todo todo);
+
+class Todo {
+  Todo({this.text, this.isDone: false});
+
+  final String text;
+  bool isDone;
+
+  @override String toString() => "Todo[$text: ${isDone ? 'done' : 'not done'}]";
+
+  static fromMap(Map<String, dynamic> map) {
+    return new Todo(text: map["text"], isDone: map["done"]);
+  }
+
+  toJson() => toMap();
+
+  toMap() =>
+      {
+        "text": text,
+        "done": isDone
+      };
+}
 
 class TodoListItem extends StatelessWidget {
 
-  TodoListItem({Todo todo, this.isChecked, this.onTodoClick})
+  TodoListItem({
+    @required Todo todo,
+    @required this.isChecked,
+    @required this.onTodoTap,
+    @required this.onTodoLongPress})
       : todo = todo,
         super(key: new ObjectKey(todo));
 
   final Todo todo;
   final bool isChecked;
-  final TodoChangedCallback onTodoClick;
+  final TodoChangedCallback onTodoTap;
+  final TodoLongTouchedCallback onTodoLongPress;
 
   Color _getColor(BuildContext context) {
     return isChecked ? Colors.black54 : Theme
@@ -36,11 +54,11 @@ class TodoListItem extends StatelessWidget {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return new ListTile(
-        onTap: () => onTodoClick(this.todo, isChecked),
+        onTap: () => onTodoTap(this.todo, isChecked),
+        onLongPress: () => onTodoLongPress(this.todo),
         leading: new CircleAvatar(
           backgroundColor: _getColor(context),
           child: new Text(todo.text[0]),

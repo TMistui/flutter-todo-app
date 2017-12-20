@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:todos/helpers.dart';
 import 'package:todos/todo.dart';
+import 'package:todos/todo_data.dart';
 import 'package:todos/todo_list.dart';
 
 void main() => runApp(new MyApp());
@@ -31,39 +34,51 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _elements = <Todo>[];
+
+  final persistenceRef = new TodoPersistence();
+  final todoMap = <String, Todo>{};
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    persistenceRef.getAll().then((todosFromDisk) {
+      setState(() {
+        for (var todo in todosFromDisk) {
+          todoMap[todo.text] = todo;
+        }
+      });
+    });
+  }
 
   Future<Null> _createNewTodo(BuildContext context) async {
-    String modalDialogResult = await _getUserTextInput(context);
+    final modalResult = await promptForUserTextInput(context);
 
-    if (modalDialogResult != null && modalDialogResult.isNotEmpty) {
-      setState(() => _elements.add(new Todo(text: modalDialogResult)));
+    if (modalResult?.isNotEmpty) { // ignore: null_aware_in_condition
+      setState(() {
+        todoMap[modalResult] = new Todo(text: modalResult);
+        persistenceRef.saveState(todoMap.values);
+      });
     }
   }
 
-  Future<String> _getUserTextInput(BuildContext context) {
-    var textController = new TextEditingController();
-    return showDialog(
-        context: context, child: new SimpleDialog(
-      contentPadding: new EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      children: <Widget>[
-        new Text("Got something new to do?",
-          style: new TextStyle(fontSize: Theme.of(context).primaryTextTheme.title.fontSize),
-        ),
-        new TextField(
-          decoration: new InputDecoration(
-            hintText: "text goes here, dummy",
-          ),
-          controller: textController,
-        ),
-        new MaterialButton(
-          onPressed: () => Navigator.pop(context, textController.text ?? ""),
-          child: new Text("Create",
-            style: new TextStyle(color: Theme.of(context).primaryColor),
-          ),
-        )
-      ],
-    ));
+  void _persistChangeToDb(Todo todo, bool isChecked) {
+    setState(() {
+      // only state mutation allowed in the app
+      todoMap[todo.text].isDone = isChecked;
+      persistenceRef.saveState(todoMap.values);
+    });
+  }
+
+  Future<Null> _deleteTodoFromPersistence(Todo todo) async {
+    await Clipboard.setData(new ClipboardData(text: todo.text));
+
+    setState(() {
+      // gotta delete stuff
+      todoMap.remove(todo.text);
+      persistenceRef.saveState(todoMap.values);
+    });
   }
 
   @override
@@ -73,7 +88,9 @@ class _MyHomePageState extends State<MyHomePage> {
         title: new Text(widget.title),
       ),
       body: new TodoList(
-        todoElements: _elements,
+        todoElements: todoMap.values.toList(),
+        onTodoStateChanged: _persistChangeToDb,
+        onTodoLongPress: _deleteTodoFromPersistence,
       ),
       floatingActionButton: new FloatingActionButton(
         onPressed: () {
