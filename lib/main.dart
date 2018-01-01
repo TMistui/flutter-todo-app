@@ -60,7 +60,9 @@ class _TodoHomeState extends State<TodoHome> {
     setState(() {
       // only state mutation allowed in the app
       try {
-        _todos.singleWhere((t) => t == todo).isDone = isChecked;
+        _todos
+            .singleWhere((t) => t == todo)
+            .isDone = isChecked;
         _persistence.saveState(_todos);
       } catch (e) {
         debugPrint("An error occured in finding a todo: $todo");
@@ -69,8 +71,15 @@ class _TodoHomeState extends State<TodoHome> {
     });
   }
 
-  Future<Null> _deleteTodoFromPersistence(Todo todo) async {
-    await Clipboard.setData(new ClipboardData(text: todo.text));
+  Future<Null> _deleteTodoAndPersist(BuildContext context, Todo todo) async {
+    Scaffold
+        .of(context)
+        .showSnackBar(new SnackBar(
+      content: new Text("Copy deleted text?"),
+      action: new SnackBarAction(label: "Copy", onPressed: () async {
+        await Clipboard.setData(new ClipboardData(text: todo.text));
+      }),
+    ));
 
     setState(() {
       // gotta delete stuff
@@ -85,10 +94,17 @@ class _TodoHomeState extends State<TodoHome> {
       appBar: new AppBar(
         title: new Text(widget.title),
       ),
-      body: new TodoList(
-        todoElements: _todos,
-        onTodoStateChanged: _persistChangeToDb,
-        onTodoLongPress: _deleteTodoFromPersistence,
+      body: new Builder(
+        // according to the documentation, this is how we get a self-reference
+        // so that Scaffold.of() works in _deleteTodoAndPersist
+        builder: (BuildContext innerContext) {
+          return new TodoList(
+            todoElements: _todos,
+            onTodoStateChanged: _persistChangeToDb,
+            onTodoLongPress: (todo) =>
+                _deleteTodoAndPersist(innerContext, todo),
+          );
+        },
       ),
       floatingActionButton: new FloatingActionButton(
         onPressed: () {
