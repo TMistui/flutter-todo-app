@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 
 Future<String> promptForUserTextInput(BuildContext context) {
   var textController = new TextEditingController();
+
   return showDialog(
       context: context, child: new SimpleDialog(
     contentPadding: new EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -17,13 +18,12 @@ Future<String> promptForUserTextInput(BuildContext context) {
             .fontSize),
       ),
       new TextField(
-        decoration: new InputDecoration(
-          hintText: "text goes here, dummy",
-        ),
+        decoration: new InputDecoration(hintText: "text goes here"),
         controller: textController,
       ),
       new MaterialButton(
-        onPressed: () => Navigator.pop(context, textController.text ?? ""),
+        onPressed: () =>
+            Navigator.pop(context, textController.text.trim() ?? ""),
         child: new Text("Create",
           style: new TextStyle(color: Theme
               .of(context)
