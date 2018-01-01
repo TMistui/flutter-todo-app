@@ -24,6 +24,19 @@ class Todo {
         "text": text,
         "done": isDone
       };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Todo &&
+              runtimeType == other.runtimeType &&
+              text == other.text &&
+              isDone == other.isDone;
+
+  @override
+  int get hashCode =>
+      text.hashCode ^
+      isDone.hashCode;
 }
 
 class TodoListItem extends StatelessWidget {

@@ -14,41 +14,34 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Flutter Demo',
-      theme: new ThemeData(
-        // The application theme.
-        primarySwatch: Colors.blue,
-      ),
-      home: new MyHomePage(title: 'Foxy To-do List'),
+      title: 'Just Do It',
+      theme: new ThemeData(primarySwatch: Colors.blue),
+      home: new TodoHome(title: 'To Do'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+class TodoHome extends StatefulWidget {
+  TodoHome({Key key, this.title}) : super(key: key);
 
   final String title;
 
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  _TodoHomeState createState() => new _TodoHomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _TodoHomeState extends State<TodoHome> {
 
-  final persistenceRef = new TodoPersistence();
-  final todoMap = <String, Todo>{};
+  final _persistence = new TodoPersistence();
+  final _todos = <Todo>[];
 
 
   @override
   void initState() {
     super.initState();
 
-    persistenceRef.getAll().then((todosFromDisk) {
-      setState(() {
-        for (var todo in todosFromDisk) {
-          todoMap[todo.text] = todo;
-        }
-      });
+    _persistence.getAll().then((fromDisk) {
+      setState(() => _todos.addAll(fromDisk));
     });
   }
 
@@ -57,8 +50,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (modalResult?.isNotEmpty) { // ignore: null_aware_in_condition
       setState(() {
-        todoMap[modalResult] = new Todo(text: modalResult);
-        persistenceRef.saveState(todoMap.values);
+        _todos.add(new Todo(text: modalResult));
+        _persistence.saveState(_todos);
       });
     }
   }
@@ -66,8 +59,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void _persistChangeToDb(Todo todo, bool isChecked) {
     setState(() {
       // only state mutation allowed in the app
-      todoMap[todo.text].isDone = isChecked;
-      persistenceRef.saveState(todoMap.values);
+      try {
+        _todos.singleWhere((t) => t == todo).isDone = isChecked;
+        _persistence.saveState(_todos);
+      } catch (e) {
+        debugPrint("An error occured in finding a todo: $todo");
+        debugPrint(e);
+      }
     });
   }
 
@@ -76,8 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       // gotta delete stuff
-      todoMap.remove(todo.text);
-      persistenceRef.saveState(todoMap.values);
+      if (_todos.remove(todo))
+        _persistence.saveState(_todos);
     });
   }
 
@@ -88,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: new Text(widget.title),
       ),
       body: new TodoList(
-        todoElements: todoMap.values.toList(),
+        todoElements: _todos,
         onTodoStateChanged: _persistChangeToDb,
         onTodoLongPress: _deleteTodoFromPersistence,
       ),
@@ -98,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         tooltip: 'Add New Todo',
         child: new Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
